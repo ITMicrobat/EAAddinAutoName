@@ -1,0 +1,71 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')"/>
+    <PropertyGroup>
+        <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+        <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+        <ProjectGuid>{5C2EF3A7-5AB4-4749-A063-18CEF6C28EB4}</ProjectGuid>
+        <OutputType>Library</OutputType>
+        <AppDesignerFolder>Properties</AppDesignerFolder>
+        <RootNamespace>EAAddinAutoName</RootNamespace>
+        <AssemblyName>EAAddinAutoName</AssemblyName>
+        <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+        <FileAlignment>512</FileAlignment>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+        <PlatformTarget>AnyCPU</PlatformTarget>
+        <DebugSymbols>true</DebugSymbols>
+        <DebugType>full</DebugType>
+        <Optimize>false</Optimize>
+        <OutputPath>bin\Debug\</OutputPath>
+        <DefineConstants>DEBUG;TRACE</DefineConstants>
+        <ErrorReport>prompt</ErrorReport>
+        <WarningLevel>4</WarningLevel>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+        <PlatformTarget>AnyCPU</PlatformTarget>
+        <DebugType>pdbonly</DebugType>
+        <Optimize>true</Optimize>
+        <OutputPath>bin\Release\</OutputPath>
+        <DefineConstants>TRACE</DefineConstants>
+        <ErrorReport>prompt</ErrorReport>
+        <WarningLevel>4</WarningLevel>
+    </PropertyGroup>
+    <ItemGroup>
+        <Reference Include="Interop.EA, Version=2.10.238.1, Culture=neutral, PublicKeyToken=d28e1c76302f6a17">
+            <HintPath>C:\Program Files (x86)\Sparx Systems\EA\Interop.EA.dll</HintPath>
+        </Reference>
+        <Reference Include="System"/>
+        <Reference Include="System.Core"/>
+        <Reference Include="System.Data"/>
+        <Reference Include="System.Windows.Forms"/>
+        <Reference Include="System.Xml"/>
+    </ItemGroup>
+    <ItemGroup>
+        <Compile Include="EAAddinAutoNameClass.cs"/>
+        <Compile Include="Properties\AssemblyInfo.cs"/>
+    </ItemGroup>
+    <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
+
+    
+    <PropertyGroup>
+        <AddInName>EAAddinAutoName</AddInName>
+        <AddInClassName>$(AddInName).$(AddInName)Class</AddInClassName>
+        <RegAsmPath>c:\Windows\Microsoft.NET\Framework\v4.0.30319\RegAsm.exe</RegAsmPath>
+        <DllPath>d:\rider\$(AddInName)\bin\Debug\$(AddInName).dll</DllPath>
+        <DllRegistered Condition="$(registry:HKEY_CLASSES_ROOT\$(AddInClassName)) != ''">true</DllRegistered>
+        <DllRegistered Condition="$(DllRegistered) == '' ">false</DllRegistered>
+    </PropertyGroup>
+
+    <Target Name="BeforeBuild" Condition="$(DllRegistered) == 'true' ">
+        <Message Text="unregistering dll" />
+        <Exec Command="$(RegAsmPath) $(DllPath) /codebase /unregister /tlb /verbose"/>
+    </Target>
+
+    <Target Name="AfterBuild" Condition="Exists('$(DllPath)')">
+        <Message Text="registering dll"  />
+        <Exec Command="$(RegAsmPath) $(DllPath) /codebase /tlb /verbose"/>
+        <Exec Command="regedit /S SparxEA_AddIn.reg"
+              Condition="$(registry:HKEY_CURRENT_USER\Software\Sparx Systems\EAAddins\$(AddInName)) != '$(AddInClassName)'" />
+    </Target>
+</Project>
